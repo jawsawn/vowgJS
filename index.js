@@ -20,6 +20,7 @@ if (urlParams.get('p2')) ringDensity = urlParams.get('p2');
 if (urlParams.get('p3')) particleSpeed = urlParams.get('p3');
 if (urlParams.get('p4')) gameTimeMult = urlParams.get('p4');
 
+
 class Particle {
     constructor({ x, y, color, ax, ay, ringP }) {
         this.x = x;
@@ -98,6 +99,11 @@ function onLoad() {
     ctx = canvas.getContext("2d");
     canvas.width = canvasSize;
     canvas.height = canvasSize;
+
+    document.getElementById("ringCount").value = ringCount ;
+      document.getElementById("ringDensity").value = ringDensity;
+     document.getElementById("particleSpeed").value = particleSpeed;
+     document.getElementById("gameTimeMult").value = gameTimeMult;
 
     function animate() {
         rafId = requestAnimationFrame(animate)
