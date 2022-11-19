@@ -11,12 +11,14 @@ let gameRingCount = 0;
 let ringCount = 5;
 let ringDensity = 75;
 let particleSpeed = 1;
+let gameTimeMult = 1;
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 if (urlParams.get('p1')) ringCount = urlParams.get('p1');
 if (urlParams.get('p2')) ringDensity = urlParams.get('p2');
 if (urlParams.get('p3')) particleSpeed = urlParams.get('p3');
+if (urlParams.get('p4')) gameTimeMult = urlParams.get('p4');
 
 class Particle {
     constructor({ x, y, color, ax, ay, ringP }) {
@@ -27,8 +29,25 @@ class Particle {
         this.ax = ax;
         this.ay = ay;
         this.size = 8;
-        this.color = color;
         this.ringP = ringP;
+        switch (ringP % 6) {
+            case 0:
+                this.color = "red";
+                break;
+            case 1:
+                this.color = "magenta";
+                break;
+            case 2:
+                this.color = "blue";
+                break;
+            case 3 || 4:
+                this.color = "green";
+                break;
+            case 5:
+                this.color = "cyan";
+                break;
+        }
+
     }
     draw() {
         //Despawn out of bounds particles
@@ -92,7 +111,7 @@ function onLoad() {
         particleArray.forEach(e => {
             e.update()
         })
-        gameTime++;
+        gameTime += 1 * gameTimeMult;
 
     }
 
@@ -139,8 +158,9 @@ function handleChange() {
     ringCount = document.getElementById("ringCount").value;
     ringDensity = document.getElementById("ringDensity").value;
     particleSpeed = document.getElementById("particleSpeed").value;
+    gameTimeMult = document.getElementById("gameTimeMult").value;
 
-    window.history.replaceState("", "", `${window.location.href.split('?')[0]}?p1=${ringCount}&p2=${ringDensity}&p3=${particleSpeed}`);
+    window.history.replaceState("", "", `${window.location.href.split('?')[0]}?p1=${ringCount}&p2=${ringDensity}&p3=${particleSpeed}&p4=${gameTimeMult}`);
 
     //Restarts the Game
     cancelAnimationFrame(rafId)
