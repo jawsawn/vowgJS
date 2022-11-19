@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>vowgJS</title>
+    <script src="index.js"></script>
+    <style>
+        body {
+            background-color: #222;
+            display: flex;
+            place-content: center;
+        }
+
+        .form {
+            background-color: #000;
+            padding: 1rem;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #FFF;
+            width: min-content;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form input {
+            background-color: #333;
+            color: #FFF;
+        }
+
+        .form label {
+            color: #FFF;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                flex-direction: column;
+            }
+
+            .form {
+                width: auto;
+            }
+        }
+    </style>
+</head>
+
+<body onload="onLoad()">
+    <canvas id="canvas" onclick="onClick()"></canvas>
+    
+    <div class="form">
+        <p>Vowg Rings:</p>
+        <input type="number" value="5" id="ringCount" onchange="handleChange()"> 
+
+        <p>Vowg Density:</p>
+        <input type="number" value="75" id="ringDensity" onchange="handleChange()">
+
+        <p>Particle Speed:</p>
+        <input type="number" value="1" id="particleSpeed" onchange="handleChange()">
+    </div>
+</body>
+
+</html>
