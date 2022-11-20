@@ -15,6 +15,11 @@
             background-color: #222;
             display: flex;
             place-content: center;
+
+        }
+
+        #canvas {
+            outline: 0;
         }
 
         .form {
@@ -32,7 +37,7 @@
             color: #FFF;
         }
 
-        .form label {
+        .form p {
             color: #FFF;
         }
 
@@ -49,11 +54,12 @@
 </head>
 
 <body onload="onLoad()">
-    <canvas id="canvas" onclick="onClick()"></canvas>
-    
+    <canvas id="canvas" tabindex="0" onclick="onClick()" onkeydown="handleKeyPress(event)"
+        onkeyup="handleKeyPressUp(event)"></canvas>
+
     <div class="form">
         <p>Vowg Rings:</p>
-        <input type="number" value="5" id="ringCount" onchange="handleChange()"> 
+        <input type="number" value="5" id="ringCount" onchange="handleChange()">
 
         <p>Vowg Density:</p>
         <input type="number" value="75" id="ringDensity" onchange="handleChange()">
@@ -64,8 +70,17 @@
         <p>Game Speed Multiplier:</p>
         <input type="number" value="1" id="gameTimeMult" onchange="handleChange()">
 
+        <p>Vowg Spread:</p>
+        <input type="number" value="0.8" id="particleSpread" onchange="handleChange()">
+
         <p>Y Offset:</p>
-        <input type="number" value="0" id="yOffsetVal" onchange="handleChange()">
+        <input type="number" value="0" id="yOffsetVal" onchange="handleChange()"><br>
+        
+        <span>
+            <p style="display: inline;">Playable:</p>
+            <input type="checkbox" id="playable" onchange="handlePlayable()">
+        </span>
+
     </div>
 </body>
 
