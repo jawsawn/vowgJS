@@ -7,21 +7,30 @@ let canvasSize = 800;
 let canvasOrigin = canvasSize / 2;
 let gameTime = 0;
 let gameRingCount = 0;
+let particleSize = 20;
 
 let ringCount = 5;
-let ringDensity = 75;
+let ringDensity = 40;
 let particleSpeed = 1;
 let gameTimeMult = 1;
 let yOffsetVal = 0;
-let particleSpread = 0.8;
+let spread = 4;
 let playable = false;
+let memeMode = false;
+
+let ringDrawSpeed = 1;
+
 
 let playerSize = 4;
 let playerCoords = { x: canvasOrigin, y: 750 };
 let playerMovement = { left: false, right: false, up: false, down: false, shift: 1 };
 
-let defaultPlayerSpeed = 2;
+let defaultPlayerSpeed = 4;
 let playerSpeed = defaultPlayerSpeed;
+
+const gameAudio = new Audio("kanako_midi.mp3");
+gameAudio.loop = true;
+
 
 const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
@@ -30,39 +39,28 @@ if (urlParams.get('p2')) ringDensity = urlParams.get('p2');
 if (urlParams.get('p3')) particleSpeed = urlParams.get('p3');
 if (urlParams.get('p4')) gameTimeMult = urlParams.get('p4');
 if (urlParams.get('p5')) yOffsetVal = +urlParams.get('p5');
-if (urlParams.get('p6')) particleSpread = +urlParams.get('p6');
+if (urlParams.get('p6')) spread = +urlParams.get('p6');
 
+const colorList = ["red", "magenta", "blue", "lime", "lime", "cyan"]
+
+const imgBackground = new Image();
+imgBackground.src = "background.png"
 
 class Particle {
-    constructor({ x, y, ax, ay, ringP }) {
+    constructor({ x, y, ax, ay, ring, delay }) {
         this.x = x;
         this.y = y;
-        this.vx = 0;
-        this.vy = 0;
         this.ax = ax;
         this.ay = ay;
-        this.size = 8;
-        this.ringP = ringP;
-        switch (ringP % 6) {
-            case 0:
-                this.color = "red";
-                break;
-            case 1:
-                this.color = "magenta";
-                break;
-            case 2:
-                this.color = "blue";
-                break;
-            case 3:
-                this.color = "green";
-                break;
-            case 4:
-                this.color = "yellow";
-                break;
-            case 5:
-                this.color = "cyan";
-                break;
+        this.size = particleSize;
+        this.ring = ring;
+        this.color = colorList[this.ring % 6];
+        this.delay = delay;
+        if (memeMode) {
+            this.img = new Image()
+            this.img.src = `${this.ring % 6}.png`
         }
+
 
     }
     draw() {
@@ -70,42 +68,90 @@ class Particle {
         if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) return;
 
         //Draw Particles
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.size, this.size);
-    }
-    update() {
-        //rng hell 0.1*(Math.random() > 0.5 ? 1 : -1 )
-        //Priority Release
-        if (gameTime - (100 * this.ringP) > 0) {
-            this.x -= this.ax * particleSpeed;
-            this.y -= this.ay * particleSpeed;
+        if (!memeMode) {
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.size, this.size);
+        } else {
+            ctx.drawImage(this.img, this.x, this.y, this.size, this.size)
         }
 
-        //Increase time and draw
-        this.draw();
+    }
+    update() {
+        if (this.delay < gameTime) {
+            if (((this.ring + 3) * ringDensity) < gameTime) {
+                this.x -= this.ax * particleSpeed;
+                this.y -= this.ay * particleSpeed;
+            }
+            this.draw();
+        }
     }
 }
 
 class ParticleEmitter {
-    constructor({ ox, oy, r, density, ringP }) {
+    constructor({ ox, oy, r, density, ring, ringIndex, rotation }) {
         this.ox = ox;
         this.oy = oy;
         this.r = r;
         this.density = density;
-        this.ringP = ringP;
+        this.ring = ring;
+        this.ringIndex = ringIndex;
+        this.rotation = rotation
     }
     draw() {
-        //Draw particle
-
+        //Init Ring
         for (let index = 0; index < this.density; index++) {
-            let sinF = Math.sin(2 * Math.PI * (index + 1) / this.density);
-            let cosF = Math.cos(2 * Math.PI * (index + 1) / this.density);
+            let sinF = Math.sin(2 * Math.PI * index / this.density)
+            let cosF = Math.cos(2 * Math.PI * index / this.density)
+            let asinF = Math.sin(2 * Math.PI * (Math.floor(index / spread)) / (this.density / spread))
+            let acosF = Math.cos(2 * Math.PI * (Math.floor(index / spread)) / (this.density / spread))
+            let spreadF = (Math.floor(index / spread)) / (this.density / spread);
+
+            if (this.ring % 6 == 0) {
+                sinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * index / this.density);
+                cosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * index / this.density);
+                asinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+                acosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+            }
+            if (this.ring % 6 == 1) {
+                sinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                cosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                asinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+                acosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+            }
+            if (this.ring % 6 == 2) {
+                sinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                cosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                asinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+                acosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+            }
+            if (this.ring % 6 == 3) {
+                sinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 1.6 * Math.PI * index / this.density);
+                cosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 1.6 * Math.PI * index / this.density);
+                asinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+                acosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+            }
+            if (this.ring % 6 == 4) {
+                sinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                cosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                asinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+                acosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+            }
+            if (this.ring % 6 == 5) {
+                sinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                cosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.8) + this.rotation + 0.8 * Math.PI * index / this.density);
+                asinF = Math.sin(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+                acosF = Math.cos(2 * Math.PI * (this.ringIndex / ringCount + 0.6) + this.rotation + 1.6 * Math.PI * spreadF);
+            }
+
+
+
             particleArray.push(new Particle({
                 x: this.ox + this.r * cosF,
                 y: this.oy + this.r * sinF,
-                ax: cosF + particleSpread * Math.cos(2 * Math.PI * (Math.floor((index + 1) / 4)) / (this.density / 4)),
-                ay: sinF + particleSpread * Math.sin(2 * Math.PI * (Math.floor((index + 1) / 4)) / (this.density / 4)),
-                ringP: this.ringP
+                ax: cosF + acosF * 0.5,
+                ay: sinF + asinF * 0.5,
+                ring: this.ring,
+                delay: (this.ring * ringDensity + index) * ringDrawSpeed
             }));
         }
     }
@@ -118,68 +164,120 @@ function onLoad() {
     canvas.width = canvasSize;
     canvas.height = canvasSize;
 
+
     document.getElementById("ringCount").value = ringCount;
     document.getElementById("ringDensity").value = ringDensity;
     document.getElementById("particleSpeed").value = particleSpeed;
     document.getElementById("gameTimeMult").value = gameTimeMult;
     document.getElementById("yOffsetVal").value = yOffsetVal;
-    document.getElementById("particleSpread").value = particleSpread;
+    document.getElementById("particleSpread").value = spread;
 
     function animate() {
         rafId = requestAnimationFrame(animate)
         //Clear Background
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, canvasSize, canvasSize);
+        //ctx.fillStyle = "#000";
+        //ctx.fillRect(0, 0, canvasSize, canvasSize);
+        ctx.drawImage(imgBackground, 0, 0, 800, 800)
         //init more rings
-        if (gameTime % 300 == 0)
-            initRings()
+        // if (gameTime % 300 == 0)
+        //     initRings()
 
-        //Animate particles
-        particleArray.forEach(e => {
-            e.update()
-        })
+        // //Animate particles
+
 
         if (playable) {
             updateMovement()
+            //player outline
             ctx.fillStyle = "#FFF";
-            ctx.fillRect(playerCoords.x - (playerSize + 2) / 2, playerCoords.y - (playerSize + 2) / 2, playerSize + 2, playerSize + 2);
+            if (playerMovement.shift != 1) ctx.fillStyle = "#FCC";
+            ctx.fillRect(playerCoords.x - (playerSize + 4) / 2, playerCoords.y - (playerSize + 4) / 2, playerSize + 4, playerSize + 4);
+            //player hitbox
             ctx.fillStyle = "#F00";
             ctx.fillRect(playerCoords.x - playerSize / 2, playerCoords.y - playerSize / 2, playerSize, playerSize);
         }
 
-        gameTime += 1 * gameTimeMult;
+        //Game Loop
+        //Draw Rings
+        if (gameTime % 6 * ringDensity * ringDrawSpeed == 0) initRings();
 
+        //Update Particles
+        particleArray.forEach(e => e.update());
+
+        //Update Time
+        gameTime += 1 * gameTimeMult;
     }
 
     function initRings() {
         emitterArray = [];
-        let ringRadius = 50;
+
+        //Ring0
+        let ringRadius = 100;
+        let ringRotation = Math.PI * 1.5;
         for (let index = 0; index < ringCount; index++) {
             emitterArray.push(new ParticleEmitter({
-                ox: canvasOrigin + ringRadius * Math.cos(2 * Math.PI * (index + 1) / ringCount),
-                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(2 * Math.PI * (index + 1) / ringCount),
-                r: ringRadius, density: ringDensity, ringP: gameRingCount
+                ox: canvasOrigin + ringRadius * Math.cos(ringRotation + 2 * Math.PI * index / ringCount),
+                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(ringRotation + 2 * Math.PI * index / ringCount),
+                r: ringRadius, density: ringDensity, ring: gameRingCount, ringIndex: index, rotation: ringRotation
             }));
         }
+        gameRingCount++;
+        //Ring2
+        ringRadius = 130;
+        ringRotation = Math.PI * 0.5;
+        for (let index = 0; index < ringCount; index++) {
+            emitterArray.push(new ParticleEmitter({
+                ox: canvasOrigin + ringRadius * Math.cos(ringRotation + 2 * Math.PI * index / ringCount),
+                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(ringRotation + 2 * Math.PI * index / ringCount),
+                r: ringRadius, density: ringDensity, ring: gameRingCount, ringIndex: index, rotation: ringRotation
+            }));
+        }
+        gameRingCount++;
+        //Ring3
+        ringRadius = 160;
+        ringRotation = Math.PI * 1.5;
+        for (let index = 0; index < ringCount; index++) {
+            emitterArray.push(new ParticleEmitter({
+                ox: canvasOrigin + ringRadius * Math.cos(ringRotation + 2 * Math.PI * index / ringCount),
+                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(ringRotation + 2 * Math.PI * index / ringCount),
+                r: ringRadius, density: ringDensity, ring: gameRingCount, ringIndex: index, rotation: ringRotation
+            }));
+        }
+        gameRingCount++;
+        //Ring4
+        ringRotation = Math.PI * 1.5;
         ringRadius = 100;
-        gameRingCount++;
         for (let index = 0; index < ringCount; index++) {
             emitterArray.push(new ParticleEmitter({
-                ox: canvasOrigin + ringRadius * Math.cos(2 * Math.PI * (index + 1) / ringCount),
-                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(2 * Math.PI * (index + 1) / ringCount),
-                r: 100, density: ringDensity, ringP: gameRingCount
-            }));
-        }
-        ringRadius = 150;
-        gameRingCount++;
-        for (let index = 0; index < ringCount; index++) {
-            emitterArray.push(new ParticleEmitter({
-                ox: canvasOrigin + ringRadius * Math.cos(2 * Math.PI * (index + 1) / ringCount),
-                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(2 * Math.PI * (index + 1) / ringCount),
-                r: ringRadius, density: ringDensity, ringP: gameRingCount
+                ox: canvasOrigin + ringRadius * Math.cos(ringRotation + 2 * Math.PI * index / ringCount),
+                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(ringRotation + 2 * Math.PI * index / ringCount),
+                r: ringRadius, density: ringDensity, ring: gameRingCount, ringIndex: index, rotation: ringRotation
             }));
         }
         gameRingCount++;
+        //Ring5
+        ringRotation = Math.PI * 0.5;
+        ringRadius = 130;
+        for (let index = 0; index < ringCount; index++) {
+            emitterArray.push(new ParticleEmitter({
+                ox: canvasOrigin + ringRadius * Math.cos(ringRotation + 2 * Math.PI * index / ringCount),
+                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(ringRotation + 2 * Math.PI * index / ringCount),
+                r: ringRadius, density: ringDensity, ring: gameRingCount, ringIndex: index, rotation: ringRotation
+            }));
+        }
+        gameRingCount++;
+        //Ring6
+        ringRadius = 160;
+        ringRotation = Math.PI * 1.5;
+        for (let index = 0; index < ringCount; index++) {
+            emitterArray.push(new ParticleEmitter({
+                ox: canvasOrigin + ringRadius * Math.cos(ringRotation + 2 * Math.PI * index / ringCount),
+                oy: canvasOrigin + yOffsetVal + ringRadius * Math.sin(ringRotation + 2 * Math.PI * index / ringCount),
+                r: ringRadius, density: ringDensity, ring: gameRingCount, ringIndex: index, rotation: ringRotation
+            }));
+        }
+        gameRingCount++;
+
+        //Draw Rings
         emitterArray.forEach(e => e.draw())
     }
 
@@ -192,9 +290,10 @@ function handleChange() {
     particleSpeed = document.getElementById("particleSpeed").value;
     gameTimeMult = document.getElementById("gameTimeMult").value;
     yOffsetVal = +document.getElementById("yOffsetVal").value;
-    particleSpread = document.getElementById("particleSpread").value;
+    spread = document.getElementById("particleSpread").value;
+    memeMode = document.getElementById("memeMode").checked;
 
-    window.history.replaceState("", "", `${window.location.href.split('?')[0]}?p1=${ringCount}&p2=${ringDensity}&p3=${particleSpeed}&p4=${gameTimeMult}&p5=${yOffsetVal}&p6=${particleSpread}`);
+    window.history.replaceState("", "", `${window.location.href.split('?')[0]}?p1=${ringCount}&p2=${ringDensity}&p3=${particleSpeed}&p4=${gameTimeMult}&p5=${yOffsetVal}&p6=${spread}`);
 
     //Restarts the Game
     cancelAnimationFrame(rafId)
@@ -207,14 +306,21 @@ function handleChange() {
 
 function handlePlayable() {
     playable = document.getElementById("playable").checked;
+     gameAudio.play();
+
     yOffsetVal = -200;
     document.getElementById("yOffsetVal").value = yOffsetVal;
     handleChange()
-
 }
 
-function handleKeyPress(e) {
-    console.log(e.key)
+function handleCosmeticChange() {
+    
+    if (document.getElementById("muteMusic").checked)
+            gameAudio.pause();
+     else gameAudio.play();
+}
+
+function handleKeyPressDown(e) {
     if (e.key == "ArrowLeft")
         playerMovement.left = true;
 
@@ -229,7 +335,6 @@ function handleKeyPress(e) {
 
     if (e.key == "Shift")
         playerMovement.shift = 0.5;
-
 }
 
 function handleKeyPressUp(e) {
@@ -249,11 +354,6 @@ function handleKeyPressUp(e) {
         playerMovement.shift = 1;
 }
 
-
-function onClick() {
-
-}
-
 function updateMovement() {
 
     if (playerMovement.left)
@@ -267,10 +367,5 @@ function updateMovement() {
 
     if (playerMovement.down)
         playerCoords.y += playerSpeed * playerMovement.shift;
-
-    if ((playerMovement.left && (playerMovement.up || playerMovement.down)) || (playerMovement.right && (playerMovement.up || playerMovement.down)))
-        playerSpeed = Math.sqrt(defaultPlayerSpeed);
-    else
-        playerSpeed = defaultPlayerSpeed;
 
 }

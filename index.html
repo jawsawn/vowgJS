@@ -41,6 +41,10 @@
             color: #FFF;
         }
 
+        .checkboxp {
+            display: inline;
+        }
+
         @media (max-width: 600px) {
             body {
                 flex-direction: column;
@@ -54,7 +58,7 @@
 </head>
 
 <body onload="onLoad()">
-    <canvas id="canvas" tabindex="0" onclick="onClick()" onkeydown="handleKeyPress(event)"
+    <canvas id="canvas" tabindex="0" onclick="onClick()" onkeydown="handleKeyPressDown(event)"
         onkeyup="handleKeyPressUp(event)"></canvas>
 
     <div class="form">
@@ -62,7 +66,7 @@
         <input type="number" value="5" id="ringCount" onchange="handleChange()">
 
         <p>Vowg Density:</p>
-        <input type="number" value="75" id="ringDensity" onchange="handleChange()">
+        <input type="number" value="40" id="ringDensity" onchange="handleChange()">
 
         <p>Particle Speed:</p>
         <input type="number" value="1" id="particleSpeed" onchange="handleChange()">
@@ -71,14 +75,24 @@
         <input type="number" value="1" id="gameTimeMult" onchange="handleChange()">
 
         <p>Vowg Spread:</p>
-        <input type="number" value="0.8" id="particleSpread" onchange="handleChange()">
+        <input type="number" value="4" id="particleSpread" onchange="handleChange()">
 
         <p>Y Offset:</p>
         <input type="number" value="0" id="yOffsetVal" onchange="handleChange()"><br>
-        
+
         <span>
-            <p style="display: inline;">Playable:</p>
+            <p class="checkboxp">Playable:</p>
             <input type="checkbox" id="playable" onchange="handlePlayable()">
+        </span>
+
+        <span>
+            <p class="checkboxp">Mute music:</p>
+            <input type="checkbox" id="muteMusic" onchange="handleCosmeticChange()">
+        </span>
+
+        <span>
+            <p class="checkboxp">Meme mode:</p>
+            <input type="checkbox" id="memeMode" onchange="handleChange()">
         </span>
 
     </div>
