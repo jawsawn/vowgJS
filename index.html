@@ -11,11 +11,11 @@
     <title>vowgJS</title>
     <script src="index.js"></script>
     <style>
-
-        *{
+        * {
             margin: 0;
             box-sizing: border-box;
         }
+
         body {
             background-color: #222;
             display: flex;
@@ -25,21 +25,25 @@
 
         #canvas {
             outline: 0;
+            background-image: url("resources/image/background.png");
+            background-color: #000;
         }
 
         .form {
             background-color: #000;
-            padding: 1rem;
+            padding: 1em;
             font-family: Arial, Helvetica, sans-serif;
             color: #FFF;
             width: min-content;
             display: flex;
             flex-direction: column;
+            
         }
 
         .form input {
             background-color: #333;
             color: #FFF;
+            margin-bottom: 1em;
         }
 
         .form p {
@@ -49,25 +53,50 @@
         .inline {
             display: inline;
         }
+
         .underline {
             text-decoration: underline;
         }
 
+        #resetButton {
+            margin-top: 0.5em;
+            background-color: #333;
+            color: #FFF;
+        }
+        /* Mobile Portrait */
         @media (max-width: 600px) {
             body {
                 flex-direction: column;
+                /* overflow: hidden; */
+            }
+            #canvas{
             }
 
             .form {
                 width: auto;
+                height: calc(100vh - 100vw);
+                overflow-y: scroll;
+            }
+        }
+        /* Mobile Landscape */
+        @media (max-height: 600px) {
+            body {
+            place-content:unset;
+            }
+            #canvas{
+                height: 100vh;
+            }
+            .form {
+                width: 100%;
+                height: 100vh;
+                overflow-y: scroll;
             }
         }
     </style>
 </head>
 
 <body onload="onLoad()">
-    <canvas id="canvas" tabindex="0" onkeydown="handleKeyPressDown(event)"
-        onkeyup="handleKeyPressUp(event)"></canvas>
+    <canvas id="canvas"  tabindex="0" onkeydown="handleKeyPressDown(event)" onkeyup="handleKeyPressUp(event)"></canvas>
 
     <div class="form">
         <p>Ring Amount:</p>
@@ -77,16 +106,19 @@
         <input type="number" value="40" id="ringDensity" onchange="handleChange()">
 
         <p>Bullet Speed Multiplier:</p>
-        <input type="number" value="1" id="particleSpeed" onchange="handleChange()">
+        <input type="number" value="1" id="particleSpeed" step="0.25" onchange="handleChange()">
 
         <p>Bullet Draw Speed Multiplier:</p>
-        <input type="number" value="1" id="gameTimeMult" onchange="handleChange()">
+        <input type="number" value="1" id="gameTimeMult" step="0.25" onchange="handleChange()">
 
         <p>Bullet Grouping Amount:</p>
         <input type="number" value="4" id="particleSpread" onchange="handleChange()">
 
         <p>Bullet Size:</p>
         <input type="number" value="20" id="particleSize" onchange="handleChange()">
+
+        <button type="button" value="20" id="resetButton" onclick="handleChange(true)">Reset Settings</button>
+        <br>
 
 
         <span>
@@ -96,7 +128,7 @@
 
         <span>
             <p class="inline">Mute music:</p>
-            <input type="checkbox" id="muteMusic" onchange="handleCosmeticChange()">
+            <input type="checkbox" id="muteMusic" onchange="handleMuteAudio()">
         </span>
 
         <span>
@@ -106,17 +138,25 @@
 
         <span>
             <p class="inline">Disable background:</p>
-            <input type="checkbox" id="disableBackground" onchange="handleChange()">
+            <input type="checkbox" id="disableBackground" onchange="handleDisableBackground()">
         </span>
-        <br>
+
         <span>
-            <h3 class="inline">Graze:</h3> <br> 
+            <p class="inline">Fps:</p>
+            <p class="inline" id="fpsCounter">60</p>
+        </span>
+
+        <br>
+
+        <span>
+            <h3 class="inline">Graze:</h3> <br>
             <h4 class="inline" id="grazeCounter">0</h4>
         </span>
         <span>
-            <h3 class="inline">Deaths:</h3> <br> 
+            <h3 class="inline">Deaths:</h3> <br>
             <h4 class="inline" id="deathCounter">0</h4>
         </span>
+
     </div>
 </body>
 
