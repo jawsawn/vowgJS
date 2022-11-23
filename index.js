@@ -449,8 +449,18 @@ function handleTouchEnd(event) {
 }
 
 function handleTouchMove(event) {
-        playerCoords.x = event.touches[0].pageX*800/canvas.clientWidth - canvas.offsetLeft - playerSize / 2;
-        playerCoords.y = event.touches[0].pageY*800/canvas.clientHeight - canvas.offsetTop - playerSize / 2;
-        event.preventDefault();
-      
+    //Temp Solution for now, add last state controlls 
+    playerCoords.x = event.touches[0].pageX * 800 / canvas.clientWidth - canvas.offsetLeft - playerSize / 2 - 200;
+    playerCoords.y = event.touches[0].pageY * 800 / canvas.clientHeight - canvas.offsetTop - playerSize / 2;
+    event.preventDefault();
+
+}
+
+let fullscreenEnabled = false;
+function handleFullscreen() {
+    if(!fullscreenEnabled)
+    document.documentElement.requestFullscreen();
+    else 
+    document.exitFullscreen();
+    fullscreenEnabled = !fullscreenEnabled;
 }

@@ -58,7 +58,7 @@
             text-decoration: underline;
         }
 
-        #resetButton {
+        button {
             margin-top: 0.5em;
             background-color: #333;
             color: #FFF;
@@ -117,7 +117,8 @@
         <p>Bullet Size:</p>
         <input type="number" value="20" id="particleSize" onchange="handleChange()">
 
-        <button type="button" value="20" id="resetButton" onclick="handleChange(true)">Reset Settings</button>
+        <button type="button" id="resetButton" onclick="handleChange(true)">Reset Settings</button>
+        <button type="button" id="fullscreenButton" onclick="handleFullscreen()">Go Fullscreen (For Mobile)</button>
         <br>
 
 
