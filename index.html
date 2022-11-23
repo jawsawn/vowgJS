@@ -11,6 +11,11 @@
     <title>vowgJS</title>
     <script src="index.js"></script>
     <style>
+
+        *{
+            margin: 0;
+            box-sizing: border-box;
+        }
         body {
             background-color: #222;
             display: flex;
@@ -41,8 +46,11 @@
             color: #FFF;
         }
 
-        .checkboxp {
+        .inline {
             display: inline;
+        }
+        .underline {
+            text-decoration: underline;
         }
 
         @media (max-width: 600px) {
@@ -58,43 +66,57 @@
 </head>
 
 <body onload="onLoad()">
-    <canvas id="canvas" tabindex="0" onclick="onClick()" onkeydown="handleKeyPressDown(event)"
+    <canvas id="canvas" tabindex="0" onkeydown="handleKeyPressDown(event)"
         onkeyup="handleKeyPressUp(event)"></canvas>
 
     <div class="form">
-        <p>Vowg Rings:</p>
+        <p>Ring Amount:</p>
         <input type="number" value="5" id="ringCount" onchange="handleChange()">
 
-        <p>Vowg Density:</p>
+        <p>Bullet Density Amount:</p>
         <input type="number" value="40" id="ringDensity" onchange="handleChange()">
 
-        <p>Particle Speed:</p>
+        <p>Bullet Speed Multiplier:</p>
         <input type="number" value="1" id="particleSpeed" onchange="handleChange()">
 
-        <p>Game Speed Multiplier:</p>
+        <p>Bullet Draw Speed Multiplier:</p>
         <input type="number" value="1" id="gameTimeMult" onchange="handleChange()">
 
-        <p>Vowg Spread:</p>
+        <p>Bullet Grouping Amount:</p>
         <input type="number" value="4" id="particleSpread" onchange="handleChange()">
 
-        <p>Y Offset:</p>
-        <input type="number" value="0" id="yOffsetVal" onchange="handleChange()"><br>
+        <p>Bullet Size:</p>
+        <input type="number" value="20" id="particleSize" onchange="handleChange()">
+
 
         <span>
-            <p class="checkboxp">Playable:</p>
+            <p class="inline underline">Playable:</p>
             <input type="checkbox" id="playable" onchange="handlePlayable()">
         </span>
 
         <span>
-            <p class="checkboxp">Mute music:</p>
+            <p class="inline">Mute music:</p>
             <input type="checkbox" id="muteMusic" onchange="handleCosmeticChange()">
         </span>
 
         <span>
-            <p class="checkboxp">Meme mode:</p>
+            <p class="inline">Meme mode:</p>
             <input type="checkbox" id="memeMode" onchange="handleChange()">
         </span>
 
+        <span>
+            <p class="inline">Disable background:</p>
+            <input type="checkbox" id="disableBackground" onchange="handleChange()">
+        </span>
+        <br>
+        <span>
+            <h3 class="inline">Graze:</h3> <br> 
+            <h4 class="inline" id="grazeCounter">0</h4>
+        </span>
+        <span>
+            <h3 class="inline">Deaths:</h3> <br> 
+            <h4 class="inline" id="deathCounter">0</h4>
+        </span>
     </div>
 </body>
 
