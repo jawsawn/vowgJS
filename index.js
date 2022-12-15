@@ -114,6 +114,7 @@ function animate() {
     }
     fpsActivity.push(now);
     fps = fpsActivity.length;
+    //console.log((gameTime/performance.now()*1000).toFixed(0));
     document.getElementById("fpsCounter").innerText = fps > 60 ? 60 : fps;
 }
 
@@ -192,7 +193,7 @@ function initRings() {
 }
 
 class Particle {
-    constructor({ x, y, ax, ay, ring, delay }) {
+    constructor({ x, y, ax, ay, ring, delay, rotation }) {
         this.x = x;
         this.y = y;
         this.ax = ax;
@@ -202,27 +203,29 @@ class Particle {
         this.color = colorList[this.ring % 6];
         this.delay = delay;
         this.grazed = false;
+        this.rotation = rotation;
         if (memeMode) {
             this.img = new Image()
             this.img.src = `resources/image/${this.ring % 6}.png`
+            //this.img.src = `resources/image/arrow.png` //Debug Mode
         }
     }
     draw() {
         //Despawn out of bounds particles
-        if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) return;
+        if (this.x > canvas.width + particleSize || this.x < 0 - particleSize || this.y > canvas.height + particleSize || this.y < 0 - particleSize) return;
         //Draw Particles
+        ctx.save()
+        ctx.translate(Math.floor(this.x), Math.floor(this.y))
+        //ctx.rotate(this.ax, this.ay)
         if (!memeMode) {
             ctx.fillStyle = `hsl(${this.color}, 100%, 50%)`;
             //Graze Colors
-            if (playable && this.x - grazeSize < playerCoords.x && this.x + this.size + grazeSize > playerCoords.x && this.y - grazeSize < playerCoords.y && this.y + this.size + grazeSize > playerCoords.y)
-                ctx.fillStyle = `hsl(${this.color}, 100%, 80%)`;
-            ctx.fillRect(Math.floor(this.x), Math.floor(this.y), this.size, this.size);
-        } else {
-            ctx.drawImage(this.img, this.x, this.y, this.size, this.size)
-        }
+            if (playable && this.x - grazeSize < playerCoords.x && this.x + this.size + grazeSize > playerCoords.x && this.y - grazeSize < playerCoords.y && this.y + this.size + grazeSize > playerCoords.y) ctx.fillStyle = `hsl(${this.color}, 100%, 80%)`;
+            ctx.fillRect(0 - particleSize / 2, 0 - particleSize / 2, this.size, this.size);
+        } else ctx.drawImage(this.img, 0 - particleSize / 2, 0 - particleSize / 2, this.size, this.size)
 
-        if (playable)
-            this.collisionCheck();
+        ctx.restore()
+        if (playable) this.collisionCheck();
     }
     update() {
         if (this.delay < gameTime) {
@@ -240,6 +243,7 @@ class Particle {
                 deathCount++;
                 document.getElementById("deathCounter").innerText = deathCount;
                 deathCooldown = 60;
+                deathAudio.currentTime = 0;
                 deathAudio.play();
             }
         }
@@ -249,6 +253,7 @@ class Particle {
                 grazeCount++;
                 document.getElementById("grazeCounter").innerText = grazeCount;
                 this.grazed = true;
+                grazeAudio.currentTime = 0;
                 grazeAudio.play();
             }
         }
@@ -321,7 +326,8 @@ class ParticleEmitter {
                 ax: cosF + acosF,
                 ay: sinF + asinF,
                 ring: this.ring,
-                delay: (this.ring * ringDensity + index) * ringDrawSpeed
+                delay: (this.ring * ringDensity + index) * ringDrawSpeed,
+                rotation: this.rotation
             }));
         }
     }
@@ -458,9 +464,9 @@ function handleTouchMove(event) {
 
 let fullscreenEnabled = false;
 function handleFullscreen() {
-    if(!fullscreenEnabled)
-    document.documentElement.requestFullscreen();
-    else 
-    document.exitFullscreen();
+    if (!fullscreenEnabled)
+        document.documentElement.requestFullscreen();
+    else
+        document.exitFullscreen();
     fullscreenEnabled = !fullscreenEnabled;
 }
